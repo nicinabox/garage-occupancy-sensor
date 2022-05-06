@@ -6,3 +6,9 @@
 #define SUBNET_MASK (255, 255, 255, 0)
 
 #define HOSTNAME ""
+
+#define MQTT_HOST "0.0.0.0"
+#define MQTT_PORT 1883
+#define MQTT_NAME ""
+#define MQTT_PASS ""
+#define MQTT_TOPIC ""

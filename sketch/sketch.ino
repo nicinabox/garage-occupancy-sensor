@@ -1,10 +1,14 @@
 #include <WiFi.h>
 #include <HCSR04.h>
+#include <PubSubClient.h>
 #include "config.h"
 #include "secrets.h"
 
 const byte trigPin = 5;
 const byte echoPin = 18;
+
+WiFiClient wifiClient;
+PubSubClient pubclient(MQTT_HOST, MQTT_PORT, wifiClient);
 UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
 
 float distanceCm, prevDistanceCm;
@@ -13,12 +17,12 @@ void awaitWifiConnected() {
   Serial.setDebugOutput(true);
   Serial.println("Trying to connect " + String(WIFI_SSID));
 
-  IPAddress device_ip DEVICE_IP;
-  IPAddress gateway_ip GATEWAY_IP;
-  IPAddress subnet_mask SUBNET_MASK;
+  IPAddress deviceIp DEVICE_IP;
+  IPAddress gatewayIp GATEWAY_IP;
+  IPAddress subnetMask SUBNET_MASK;
 
   WiFi.mode(WIFI_STA);
-  WiFi.config(device_ip, gateway_ip, subnet_mask);
+  WiFi.config(deviceIp, gatewayIp, subnetMask);
   WiFi.hostname(HOSTNAME);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD, 9);
@@ -31,6 +35,23 @@ void awaitWifiConnected() {
   Serial.println(WiFi.localIP());
 }
 
+void reconnect() {
+  // Loop until we're reconnected
+  while (!pubclient.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect
+    if (pubclient.connect(HOSTNAME)) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(pubclient.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
 void setup() {
   Serial.begin(115200); // Starts the serial communication
 
@@ -41,13 +62,23 @@ void setup() {
 }
 
 void loop() {
+  if (!pubclient.connected()) {
+    reconnect();
+  }
+  pubclient.loop();
+
   distanceCm = distanceSensor.measureDistanceCm();
 
-  if (distanceCm < MAX_PRESENCE_DISTANCE_CM && prevDistanceCm >= MAX_PRESENCE_DISTANCE_CM){
+  bool present = distanceCm <= MAX_PRESENCE_DISTANCE_CM;
+  bool prevPresent = prevDistanceCm <= MAX_PRESENCE_DISTANCE_CM;
+
+  if (present && !prevPresent) {
+    pubclient.publish(MQTT_TOPIC, "PRESENT");
     Serial.println("PRESENT");
   }
 
-  if (distanceCm >= MAX_PRESENCE_DISTANCE_CM && prevDistanceCm < MAX_PRESENCE_DISTANCE_CM){
+  if (prevPresent && !present) {
+    pubclient.publish(MQTT_TOPIC, "VACANT");
     Serial.println("VACANT");
   }
 
