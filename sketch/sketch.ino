@@ -1,14 +1,12 @@
 #include <WiFi.h>
+#include <HCSR04.h>
 #include "config.h"
 #include "secrets.h"
 
-const int trigPin = 5;
-const int echoPin = 18;
+const byte trigPin = 5;
+const byte echoPin = 18;
+UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
 
-//define sound speed in cm/uS
-#define SOUND_SPEED 0.034
-
-long duration;
 float distanceCm, prevDistanceCm;
 
 void awaitWifiConnected() {
@@ -43,19 +41,7 @@ void setup() {
 }
 
 void loop() {
-  // Clears the trigPin
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  // Sets the trigPin on HIGH state for 10 micro seconds
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(echoPin, HIGH);
-
-  // Calculate the distance
-  distanceCm = duration * SOUND_SPEED/2;
+  distanceCm = distanceSensor.measureDistanceCm();
 
   if (distanceCm < MAX_PRESENCE_DISTANCE_CM && prevDistanceCm >= MAX_PRESENCE_DISTANCE_CM){
     Serial.println("PRESENT");
