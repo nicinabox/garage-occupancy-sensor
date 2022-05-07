@@ -11,4 +11,6 @@
 #define MQTT_PORT 1883
 #define MQTT_NAME ""
 #define MQTT_PASS ""
-#define MQTT_TOPIC ""
+
+#define MQTT_TOPIC_CONNECTED "stat/connected"
+#define MQTT_TOPIC_OCCUPANCY "stat/occupancy"
