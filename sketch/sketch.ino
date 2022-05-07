@@ -42,6 +42,7 @@ void reconnect() {
     // Attempt to connect
     if (pubclient.connect(HOSTNAME)) {
       Serial.println("connected");
+      pubclient.publish(MQTT_TOPIC_CONNECTED, "true");
     } else {
       Serial.print("failed, rc=");
       Serial.print(pubclient.state());
@@ -73,13 +74,13 @@ void loop() {
   bool prevPresent = prevDistanceCm <= MAX_PRESENCE_DISTANCE_CM;
 
   if (present && !prevPresent) {
-    pubclient.publish(MQTT_TOPIC, "PRESENT");
-    Serial.println("PRESENT");
+    pubclient.publish(MQTT_TOPIC_OCCUPANCY, OCCUPANCY_DETECTED_VALUE);
+    Serial.println(OCCUPANCY_DETECTED_VALUE);
   }
 
   if (prevPresent && !present) {
-    pubclient.publish(MQTT_TOPIC, "VACANT");
-    Serial.println("VACANT");
+    pubclient.publish(MQTT_TOPIC_OCCUPANCY, OCCUPANCY_NOT_DETECTED_VALUE);
+    Serial.println(OCCUPANCY_NOT_DETECTED_VALUE);
   }
 
   prevDistanceCm = distanceCm;
