@@ -28,7 +28,7 @@ void awaitWifiConnected() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD, 9);
 
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.println(".");
+    Serial.print(".");
     delay(1000);
   }
 
@@ -36,9 +36,9 @@ void awaitWifiConnected() {
 }
 
 void reconnect() {
-  // Loop until we're reconnected
+  // Loop until we"re reconnected
   while (!pubclient.connected()) {
-    Serial.print("Attempting MQTT connection...");
+    Serial.print("Trying MQTT connection...");
     // Attempt to connect
     if (pubclient.connect(HOSTNAME)) {
       Serial.println("connected");
@@ -53,13 +53,31 @@ void reconnect() {
   }
 }
 
+void occupancyEffect(bool isPresent) {
+    const char* value = isPresent ? OCCUPANCY_DETECTED_VALUE : OCCUPANCY_NOT_DETECTED_VALUE;
+
+    digitalWrite(LED_BUILTIN, isPresent ? HIGH : LOW);
+
+    pubclient.publish(MQTT_TOPIC_OCCUPANCY, value);
+
+    Serial.print(MQTT_TOPIC_OCCUPANCY);
+    Serial.print(" - ");
+    Serial.println(value);
+}
+
+bool isPresent(float distanceValue) {
+  return distanceValue > 0.00 && distanceValue <= MAX_PRESENCE_DISTANCE_CM;
+}
+
 void setup() {
   Serial.begin(115200); // Starts the serial communication
 
   awaitWifiConnected();
 
-  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
-  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
@@ -70,17 +88,17 @@ void loop() {
 
   distanceCm = distanceSensor.measureDistanceCm();
 
-  bool present = distanceCm <= MAX_PRESENCE_DISTANCE_CM;
-  bool prevPresent = prevDistanceCm <= MAX_PRESENCE_DISTANCE_CM;
+  bool present = isPresent(distanceCm);
+  bool prevPresent = isPresent(prevDistanceCm);
 
-  if (present && !prevPresent) {
-    pubclient.publish(MQTT_TOPIC_OCCUPANCY, OCCUPANCY_DETECTED_VALUE);
-    Serial.println(OCCUPANCY_DETECTED_VALUE);
-  }
+  if (present != prevPresent) {
+      occupancyEffect(present);
 
-  if (prevPresent && !present) {
-    pubclient.publish(MQTT_TOPIC_OCCUPANCY, OCCUPANCY_NOT_DETECTED_VALUE);
-    Serial.println(OCCUPANCY_NOT_DETECTED_VALUE);
+      Serial.print("distanceCm/prevDistanceCm - ");
+      Serial.print(distanceCm);
+      Serial.print("/");
+      Serial.print(prevDistanceCm);
+      Serial.println();
   }
 
   prevDistanceCm = distanceCm;

@@ -14,6 +14,12 @@ Define WiFi, MQTT connections in `secrets.h`
 cp secrets.example.h secrets.h
 ```
 
+### Flashing
+
+1. Plugin USB
+2. In Arduino editor press Upload
+3. When "Connecting..." hold down BOOT button until flashing begins
+
 ### MQTT
 
 Use `mosquitto` to test MQTT locally.
