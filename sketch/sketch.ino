@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <HCSR04.h>
 #include <PubSubClient.h>
+#include <RunningMedian.h>
 #include "config.h"
 #include "secrets.h"
 
@@ -10,6 +11,7 @@ const byte echoPin = 18;
 WiFiClient wifiClient;
 PubSubClient pubclient(MQTT_HOST, MQTT_PORT, wifiClient);
 UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
+RunningMedian samples = RunningMedian(5);
 
 float distanceCm, prevDistanceCm;
 
@@ -66,11 +68,11 @@ void occupancyEffect(bool isPresent) {
 }
 
 bool isPresent(float distanceValue) {
-  return distanceValue > 0.00 && distanceValue <= MAX_PRESENCE_DISTANCE_CM;
+  return distanceValue > 0 && distanceValue <= MAX_PRESENCE_DISTANCE_CM;
 }
 
 void setup() {
-  Serial.begin(115200); // Starts the serial communication
+  Serial.begin(115200);
 
   awaitWifiConnected();
 
@@ -86,7 +88,10 @@ void loop() {
   }
   pubclient.loop();
 
-  distanceCm = distanceSensor.measureDistanceCm();
+  float rawDistance = distanceSensor.measureDistanceCm();
+  samples.add(rawDistance);
+
+  distanceCm = samples.getMedian();
 
   bool present = isPresent(distanceCm);
   bool prevPresent = isPresent(prevDistanceCm);
