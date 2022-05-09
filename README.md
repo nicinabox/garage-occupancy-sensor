@@ -11,7 +11,7 @@ Define WiFi, MQTT connections in `secrets.h`
 ### Setup
 
 ```
-cp secrets.example.h secrets.h
+cp src/config.example.h src/config.h
 ```
 
 ### Flashing
