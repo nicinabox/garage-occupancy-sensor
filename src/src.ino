@@ -44,6 +44,7 @@ void reconnect() {
     if (pubclient.connect(HOSTNAME)) {
       Serial.println("connected");
       pubclient.publish(MQTT_TOPIC_CONNECTED, "true");
+      occupancyEffect(isPresent(distanceCm));
     } else {
       Serial.print("failed, rc=");
       Serial.print(pubclient.state());
