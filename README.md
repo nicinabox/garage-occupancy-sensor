@@ -2,17 +2,15 @@
 
 ## Configuration
 
-Define `MAX_PRESENCE_DISTANCE_CM` in `config.h`
-
-Define WiFi, MQTT connections in `secrets.h`
-
-## Development
-
 ### Setup
 
 ```
 cp src/config.example.h src/config.h
 ```
+
+Adjust config as needed in `src/config.h`.
+
+## Development
 
 ### Flashing
 
