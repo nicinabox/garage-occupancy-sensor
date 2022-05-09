@@ -3,7 +3,6 @@
 #include <PubSubClient.h>
 #include <RunningMedian.h>
 #include "config.h"
-#include "secrets.h"
 
 const byte trigPin = 5;
 const byte echoPin = 18;
