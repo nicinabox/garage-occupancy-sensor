@@ -8,22 +8,17 @@ const byte trigPin = 5;
 const byte echoPin = 18;
 
 WiFiClient wifiClient;
-PubSubClient pubclient(MQTT_HOST, MQTT_PORT, wifiClient);
+PubSubClient client(MQTT_HOST, MQTT_PORT, wifiClient);
 UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
 RunningMedian samples = RunningMedian(5);
 
 float distanceCm, prevDistanceCm;
 
-void awaitWifiConnected() {
+void connectWifi() {
   Serial.setDebugOutput(true);
   Serial.println("Trying to connect " + String(WIFI_SSID));
 
-  IPAddress deviceIp DEVICE_IP;
-  IPAddress gatewayIp GATEWAY_IP;
-  IPAddress subnetMask SUBNET_MASK;
-
   WiFi.mode(WIFI_STA);
-  WiFi.config(deviceIp, gatewayIp, subnetMask);
   WiFi.hostname(HOSTNAME);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD, 9);
@@ -36,21 +31,29 @@ void awaitWifiConnected() {
   Serial.println(WiFi.localIP());
 }
 
-void reconnect() {
-  // Loop until we"re reconnected
-  while (!pubclient.connected()) {
-    Serial.print("Trying MQTT connection...");
-    // Attempt to connect
-    if (pubclient.connect(HOSTNAME)) {
+void connectMQTT() {
+  while (!client.connected()) {
+    Serial.print("Trying MQTT connection");
+    Serial.print(".");
+
+    bool connected = client.connect(
+      MQTT_CLIENT_ID,
+      MQTT_USER,
+      MQTT_PASS,
+      MQTT_LAST_WILL_TOPIC,
+      MQTT_LAST_WILL_QOS,
+      MQTT_LAST_WILL_RETAIN,
+      MQTT_LAST_WILL_MESSAGE
+    );
+
+    if (connected) {
       Serial.println("connected");
-      pubclient.publish(MQTT_TOPIC_CONNECTED, "true");
+      client.publish(MQTT_TOPIC_CONNECTED, "true");
       occupancyEffect(isPresent(distanceCm));
     } else {
       Serial.print("failed, rc=");
-      Serial.print(pubclient.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
+      Serial.print(client.state());
+      delay(1000);
     }
   }
 }
@@ -60,7 +63,7 @@ void occupancyEffect(bool isPresent) {
 
     digitalWrite(LED_BUILTIN, isPresent ? HIGH : LOW);
 
-    pubclient.publish(MQTT_TOPIC_OCCUPANCY, value);
+    client.publish(MQTT_TOPIC_OCCUPANCY, value);
 
     Serial.print(MQTT_TOPIC_OCCUPANCY);
     Serial.print(" - ");
@@ -74,19 +77,18 @@ bool isPresent(float distanceValue) {
 void setup() {
   Serial.begin(115200);
 
-  awaitWifiConnected();
-
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
   pinMode(LED_BUILTIN, OUTPUT);
+
+  connectWifi();
+  connectMQTT();
 }
 
 void loop() {
-  if (!pubclient.connected()) {
-    reconnect();
-  }
-  pubclient.loop();
+  connectMQTT();
+  client.loop();
 
   float rawDistance = distanceSensor.measureDistanceCm();
   samples.add(rawDistance);
