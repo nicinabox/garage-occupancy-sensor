@@ -14,7 +14,7 @@ RunningMedian samples = RunningMedian(5);
 
 float prevDistance;
 
-void connectWifi()
+void connectWiFi()
 {
 	Serial.setDebugOutput(true);
 	Serial.println("Trying to connect " + String(WIFI_SSID));
@@ -35,7 +35,7 @@ void connectWifi()
 
 void onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-	connectWifi();
+	connectWiFi();
 }
 
 void connectMQTT()
@@ -91,12 +91,11 @@ void setup()
 {
 	Serial.begin(115200);
 
+	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(trigPin, OUTPUT);
 	pinMode(echoPin, INPUT);
 
-	pinMode(LED_BUILTIN, OUTPUT);
-
-	connectWifi();
+	connectWiFi();
 	connectMQTT();
 
 	WiFi.onEvent(onWifiDisconnect, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
