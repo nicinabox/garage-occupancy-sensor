@@ -12,7 +12,7 @@ PubSubClient client(MQTT_HOST, MQTT_PORT, wifiClient);
 UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
 RunningMedian samples = RunningMedian(5);
 
-float distanceCm, prevDistanceCm;
+float prevDistance;
 
 void connectWifi()
 {
@@ -58,7 +58,7 @@ void connectMQTT()
 		{
 			Serial.println("connected");
 			client.publish(MQTT_TOPIC_CONNECTED, "true");
-			occupancyEffect(isPresent(distanceCm));
+			occupancyEffect(isPresent(prevDistance));
 		}
 		else
 		{
@@ -110,23 +110,20 @@ void loop()
 	float rawDistance = distanceSensor.measureDistanceCm();
 	samples.add(rawDistance);
 
-	distanceCm = samples.getMedian();
+	float distance = samples.getMedian();
 
-	bool present = isPresent(distanceCm);
-	bool prevPresent = isPresent(prevDistanceCm);
+	bool present = isPresent(distance);
+	bool prevPresent = isPresent(prevDistance);
 
 	if (present != prevPresent)
 	{
 		occupancyEffect(present);
 
-		Serial.print("distanceCm/prevDistanceCm - ");
-		Serial.print(distanceCm);
-		Serial.print("/");
-		Serial.print(prevDistanceCm);
+		Serial.printf("distance: %f | prevDistance %f", distance, prevDistance);
 		Serial.println();
 	}
 
-	prevDistanceCm = distanceCm;
+	prevDistance = distance;
 
 	delay(500);
 }
