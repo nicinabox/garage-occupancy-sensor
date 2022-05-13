@@ -21,7 +21,7 @@ void connectWifi() {
   WiFi.mode(WIFI_STA);
   WiFi.hostname(HOSTNAME);
 
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD, 9);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
@@ -29,6 +29,10 @@ void connectWifi() {
   }
 
   Serial.println(WiFi.localIP());
+}
+
+void onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info) {
+  connectWifi();
 }
 
 void connectMQTT() {
@@ -84,6 +88,8 @@ void setup() {
 
   connectWifi();
   connectMQTT();
+
+  WiFi.onEvent(onWifiDisconnect, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 }
 
 void loop() {
