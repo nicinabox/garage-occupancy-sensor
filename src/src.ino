@@ -5,13 +5,10 @@
 #include <RunningMedian.h>
 #include "config.h"
 
-const byte trigPin = 5;
-const byte echoPin = 18;
-
 WiFiMulti wifiMulti;
 WiFiClient wifiClient;
 PubSubClient client(MQTT_HOST, MQTT_PORT, wifiClient);
-UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
+UltraSonicDistanceSensor distanceSensor(TRIG_PIN, ECHO_PIN);
 RunningMedian samples = RunningMedian(6);
 
 float prevDistance;
@@ -95,8 +92,8 @@ void setup()
 	Serial.begin(BAUD_RATE);
 
 	pinMode(LED_BUILTIN, OUTPUT);
-	pinMode(trigPin, OUTPUT);
-	pinMode(echoPin, INPUT);
+	pinMode(TRIG_PIN, OUTPUT);
+	pinMode(ECHO_PIN, INPUT);
 
 	for (size_t i = 0; i < WIFI_MULTI_SIZE; i++)
 	{
