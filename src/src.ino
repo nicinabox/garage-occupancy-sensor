@@ -62,7 +62,6 @@ void connectMQTT()
 		{
 			Serial.println("connected");
 			client.publish(MQTT_TOPIC_CONNECTED, "true");
-			occupancyEffect(isPresent(prevDistance));
 		}
 		else
 		{
@@ -118,7 +117,11 @@ void loop()
 	client.loop();
 
 	float rawDistance = distanceSensor.measureDistanceCm();
-	samples.add(rawDistance);
+
+	// Limit bad readings
+	if (rawDistance > 0) {
+		samples.add(rawDistance);
+	}
 
 	float distance = samples.getMedian();
 
