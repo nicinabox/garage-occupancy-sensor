@@ -12,7 +12,7 @@ WiFiMulti wifiMulti;
 WiFiClient wifiClient;
 PubSubClient client(MQTT_HOST, MQTT_PORT, wifiClient);
 UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
-RunningMedian samples = RunningMedian(5);
+RunningMedian samples = RunningMedian(6);
 
 float prevDistance;
 
