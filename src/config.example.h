@@ -1,16 +1,19 @@
-#define WIFI_SSID ""
-#define WIFI_PASSWORD ""
-
-#define DEVICE_IP (0, 0, 0, 0)
-#define GATEWAY_IP (0, 0, 0, 1)
-#define SUBNET_MASK (255, 255, 255, 0)
-
 #define HOSTNAME ""
+
+#define ENABLE_DEBUG true
+#define BAUD_RATE 115200
+
+#define WIFI_MULTI_SIZE 1
+
+const char * WIFI_MULTI[WIFI_MULTI_SIZE][2] = {
+    { "Name", "Password" },
+};
 
 #define MQTT_HOST "0.0.0.0"
 #define MQTT_PORT 1883
 #define MQTT_NAME ""
 #define MQTT_PASS ""
+#define MQTT_KEEP_ALIVE 15
 #define MQTT_CLIENT_ID HOSTNAME
 
 #define MQTT_TOPIC_CONNECTED "stat/connected"
