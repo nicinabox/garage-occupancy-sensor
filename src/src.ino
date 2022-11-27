@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WiFiMulti.h>
 #include <HCSR04.h>
 #include <PubSubClient.h>
 #include <RunningMedian.h>
@@ -7,6 +8,7 @@
 const byte trigPin = 5;
 const byte echoPin = 18;
 
+WiFiMulti wifiMulti;
 WiFiClient wifiClient;
 PubSubClient client(MQTT_HOST, MQTT_PORT, wifiClient);
 UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
@@ -20,17 +22,19 @@ void connectWiFi()
 	Serial.println("Trying to connect " + String(WIFI_SSID));
 
 	WiFi.mode(WIFI_STA);
-	WiFi.hostname(HOSTNAME);
+	WiFi.disconnect(true);
+	WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+	WiFi.setHostname(HOSTNAME);
 
-	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-	while (WiFi.status() != WL_CONNECTED)
+	while (wifiMulti.run() != WL_CONNECTED)
 	{
 		Serial.print(".");
 		delay(1000);
 	}
 
+	Serial.println("connected to " + WiFi.SSID());
 	Serial.println(WiFi.localIP());
+	Serial.printf("RSSI: %d dBm\n", WiFi.RSSI());
 }
 
 void onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info)
@@ -95,14 +99,21 @@ void setup()
 	pinMode(trigPin, OUTPUT);
 	pinMode(echoPin, INPUT);
 
+	for (size_t i = 0; i < WIFI_MULTI_SIZE; i++)
+	{
+		wifiMulti.addAP(WIFI_MULTI[i][0], WIFI_MULTI[i][1]);
+	}
+
 	connectWiFi();
 	connectMQTT();
-
-	WiFi.onEvent(onWifiDisconnect, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 }
 
 void loop()
 {
+	if (wifiMulti.run(10000) != WL_CONNECTED) {
+		connectWiFi();
+	}
+
 	connectMQTT();
 	client.loop();
 
