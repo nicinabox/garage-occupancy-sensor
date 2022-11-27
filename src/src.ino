@@ -18,8 +18,8 @@ float prevDistance;
 
 void connectWiFi()
 {
-	Serial.setDebugOutput(true);
-	Serial.println("Trying to connect " + String(WIFI_SSID));
+	Serial.setDebugOutput(ENABLE_DEBUG);
+	Serial.print("Trying to connect");
 
 	WiFi.mode(WIFI_STA);
 	WiFi.disconnect(true);
@@ -92,7 +92,7 @@ bool isPresent(float distanceValue)
 
 void setup()
 {
-	Serial.begin(115200);
+	Serial.begin(BAUD_RATE);
 
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(trigPin, OUTPUT);
