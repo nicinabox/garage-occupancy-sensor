@@ -3,6 +3,7 @@
 #include <HCSR04.h>
 #include <PubSubClient.h>
 #include <RunningMedian.h>
+#include <esp_task_wdt.h>
 #include "config.h"
 
 WiFiMulti wifiMulti;
@@ -32,11 +33,6 @@ void connectWiFi()
 	Serial.println("connected to " + WiFi.SSID());
 	Serial.println(WiFi.localIP());
 	Serial.printf("RSSI: %d dBm\n", WiFi.RSSI());
-}
-
-void onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info)
-{
-	connectWiFi();
 }
 
 void connectMQTT()
@@ -102,18 +98,24 @@ void setup()
 
 	connectWiFi();
 	connectMQTT();
+
+	esp_task_wdt_init(WDT_TIMEOUT, true);
+	esp_task_wdt_add(NULL);
 }
 
 void loop()
 {
-	if (wifiMulti.run(10000) != WL_CONNECTED) {
+	client.loop();
+
+	if (wifiMulti.run() != WL_CONNECTED)
+	{
 		connectWiFi();
 	}
 
 	connectMQTT();
-	client.loop();
 
 	float rawDistance = distanceSensor.measureDistanceCm();
+	Serial.println(rawDistance);
 
 	// Limit bad readings
 	if (rawDistance > 0) {
@@ -135,5 +137,6 @@ void loop()
 
 	prevDistance = distance;
 
+	esp_task_wdt_reset();
 	delay(500);
 }
