@@ -14,8 +14,12 @@ Adjust config as needed in `src/config.h`.
 
 ### Flashing
 
+In Arduino IDE:
+- Board: WROOM ESP32 DevKit
+- Port: Network
+
 1. Plugin USB
-2. In Arduino editor press Upload
+2. In Arduino IDE press Upload
 3. When "Connecting..." hold down BOOT button until flashing begins
 
 ### MQTT

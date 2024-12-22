@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
+#include <ArduinoOTA.h>
 #include <HCSR04.h>
 #include <PubSubClient.h>
 #include <RunningMedian.h>
@@ -23,6 +24,7 @@ void connectWiFi()
 	WiFi.disconnect(true);
 	WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
 	WiFi.setHostname(HOSTNAME);
+	ArduinoOTA.setHostname(HOSTNAME);
 
 	while (wifiMulti.run() != WL_CONNECTED)
 	{
@@ -97,6 +99,7 @@ void setup()
 	}
 
 	connectWiFi();
+	ArduinoOTA.begin();
 	connectMQTT();
 
 	esp_task_wdt_init(WDT_TIMEOUT, true);
@@ -106,6 +109,7 @@ void setup()
 void loop()
 {
 	client.loop();
+	ArduinoOTA.handle();
 
 	if (wifiMulti.run() != WL_CONNECTED)
 	{
