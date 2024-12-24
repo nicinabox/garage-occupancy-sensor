@@ -1,4 +1,4 @@
-#define WDT_TIMEOUT 10
+#define WDT_TIMEOUT 120
 
 #define TRIG_PIN 5
 #define ECHO_PIN 18

@@ -142,5 +142,5 @@ void loop()
 	prevDistance = distance;
 
 	esp_task_wdt_reset();
-	delay(500);
+	delay(1000);
 }
